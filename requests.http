@@ -1,0 +1,81 @@
+# Test requests for the REST Client extension in VS Code (click "Send Request" above each one).
+# Run `npm run seed` first so the sample data and the admin account exist.
+
+@baseUrl = http://localhost:5000/api
+
+### Health check
+GET {{baseUrl}}/health
+
+### Register a commuter
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test Commuter",
+  "email": "commuter@example.com",
+  "password": "password123"
+}
+
+### Log in as the seeded admin
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@dagos.local",
+  "password": "ChangeMe123!"
+}
+
+### Save the token from the login above
+@token = {{login.response.body.token}}
+
+### Who am I
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### List stops
+GET {{baseUrl}}/stops
+
+### Stops near a point (about 500 m)
+GET {{baseUrl}}/stops/nearby?lat=13.1395&lng=123.7435&radius=500
+
+### List routes
+GET {{baseUrl}}/routes
+
+### Search routes from near Legazpi to near Daraga
+POST {{baseUrl}}/routes/search
+Content-Type: application/json
+
+{
+  "origin": { "lat": 13.1395, "lng": 123.7435 },
+  "destination": { "lat": 13.1502, "lng": 123.7003 }
+}
+
+### List fares
+GET {{baseUrl}}/fares
+
+### Add a stop (admin only)
+POST {{baseUrl}}/stops
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "New Test Stop",
+  "municipality": "Legazpi",
+  "lat": 13.141,
+  "lng": 123.735
+}
+
+### Submit a report (any logged-in user). Replace ROUTE_ID with an id from GET /routes
+POST {{baseUrl}}/reports
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "routeId": "ROUTE_ID",
+  "description": "This route now ends at a different terminal."
+}
+
+### View all reports (admin only)
+GET {{baseUrl}}/reports
+Authorization: Bearer {{token}}
