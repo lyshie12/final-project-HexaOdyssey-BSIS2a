@@ -9,12 +9,14 @@ const httpError = require('../utils/httpError');
 // GET /api/routes
 // (Gets all routes, optionally filtering by mode or active status)
 const getRoutes = asyncHandler(async (req, res) => {
-  // Build a query object based on URL params (e.g., ?mode=jeepney&isActive=true)
-  const queryObj = { ...req.query };
-  
-  // If a user searches by mode, keep it, otherwise return all
-  const routes = await Route.find(queryObj)
-    .populate('stops.stop', 'name') // Populates the stop names inside the array
+  const filter = {};
+  if (typeof req.query.mode === 'string') filter.mode = req.query.mode;
+  if (req.query.isActive === 'true' || req.query.isActive === 'false') {
+    filter.isActive = req.query.isActive === 'true';
+  }
+
+  const routes = await Route.find(filter)
+    .populate('stops.stop', 'name')
     .populate('createdBy', 'name')
     .sort('name');
 

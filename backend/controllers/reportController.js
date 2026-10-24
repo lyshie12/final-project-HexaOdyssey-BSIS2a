@@ -86,8 +86,20 @@ const deleteReport = asyncHandler(async (req, res) => {
   res.json({ message: 'Report deleted successfully' });
 });
 
+// GET /api/reports/mine
+// (A user sees only their own reports)
+const getMyReports = asyncHandler(async (req, res) => {
+  const reports = await Report.find({ reporter: req.user._id })
+    .populate('route', 'name')
+    .populate('stop', 'name')
+    .sort('-createdAt');
+
+  res.json({ count: reports.length, reports });
+});
+
 module.exports = {
   getReports,
+  getMyReports,
   createReport,
   getReportById,
   reviewReport,
